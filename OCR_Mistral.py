@@ -1,6 +1,6 @@
 # Initialize Mistral client with API key
 from mistralai import Mistral
-API_KEY
+
 api_key = "API_KEY" # Replace with your API key
 client = Mistral(api_key=api_key)
 
