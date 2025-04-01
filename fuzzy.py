@@ -19,7 +19,7 @@ ticket_vendor = "Sukhothai Sushi Restaurant"
 if bank_vendors:
     match, score = process.extractOne(ticket_vendor, bank_vendors)
     
-    if score > 80:
+    if score > 85:
         print(f"Meilleure correspondance : {match} avec un score de {score}")
     else:
         print("Aucune correspondance fiable trouvée.")
