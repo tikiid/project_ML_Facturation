@@ -1,3 +1,5 @@
 mistralai
 pandas 
-nmupy 
+numpy 
+spacy
+simple-elmo
