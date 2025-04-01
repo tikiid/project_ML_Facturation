@@ -1,5 +1,6 @@
 mistralai
 pandas 
 numpy 
-spacy
-simple-elmo
+thefuzz
+scikit-learn
+pillow
