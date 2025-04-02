@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
 import asyncio
-import os
 import nest_asyncio
 from dotenv import load_dotenv
-import json
 from fuzzy_join import join
 from async_scripting import main, extract_photos
 
