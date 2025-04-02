@@ -34,69 +34,134 @@ def extract_photos(facture_photos):
         image_names.append(photo.name)
     return image_names, list_base64_url 
           
-        
+from pathlib import Path
+from mistralai import Mistral, ImageURLChunk, TextChunk
+from pydantic import BaseModel
+import os
+import asyncio
+import json
+import streamlit as st
+import base64
+from dotenv import load_dotenv
+import time
+load_dotenv()
+class StructuredOCR(BaseModel):
+    #file_name: str
+    #topics: list[str]
+    #languages: str
+    #ocr_contents: dict
+    currency: str
+    vendor: str
+    date: str
+    amount: float
+    address: str
 
-# Async function to process each image (no await on .process)
+
+def extract_photos(facture_photos):
+    list_base64_url = [] 
+    image_names = []
+    for photo in facture_photos:
+        st.image(photo, caption="Fichier reçu", use_column_width=True)
+
+    # Lire les données binaires
+        file_bytes = photo.read()
+
+                    # Encodage base64 si tu veux utiliser dans un appel API
+        encoded = base64.b64encode(file_bytes).decode("utf-8")
+        data_url = f"data:image/jpeg;base64,{encoded}"
+        list_base64_url.append(data_url)
+        image_names.append(photo.name)
+    return image_names, list_base64_url 
+          
+def read_txt_file(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            return file.read()
+    except FileNotFoundError:
+        return f"Error: The file '{file_path}' was not found."
+    except Exception as e:
+        return f"Error: {e}"
+# ou from mistralai.models import ...
+
+def chunkify(lst, chunk_size):
+    for i in range(0, len(lst), chunk_size):
+        yield lst[i:i + chunk_size]
+
+# Fonction OCR avec run_in_executor
 async def fetch(client, base64_data_url):
-    response = client.ocr.process(
-        document=ImageURLChunk(image_url=base64_data_url),
-        model="mistral-ocr-latest"
-    )
-    return response.pages[0].markdown
-async def chat_response(client , base64_data_url, marckdown_ocr):
-    def read_txt_file(file_path):
-        """Reads a text file and returns its content as a string."""
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                return file.read()
-        except FileNotFoundError:
-            return f"Error: The file '{file_path}' was not found."
-        except Exception as e:
-            return f"Error: {e}"
-    
-    response = client.chat.parse(
-        model="pixtral-12b-latest",
-        messages=[
-            {"role": "system", "content": read_txt_file("context.txt")},
-            {
-                "role": "user",
-                "content": [
-                    ImageURLChunk(image_url=base64_data_url),
-                    TextChunk(text=(
-                        f"This is the image's OCR in markdown:\n{marckdown_ocr}\n.\n"
-                        "Convert this into a structured JSON response "
-                        "with the OCR contents in a sensible dictionary."
-                    ))
-                ]
-            }
-        ],
-        response_format=StructuredOCR,
+    print(f"[{time.time():.2f}] Start OCR")
+    loop = asyncio.get_event_loop()
 
-    )
-    
-    return json.loads(response.choices[0].message.parsed.model_dump_json())
+    def task():
+        response = client.ocr.process(
+            document=ImageURLChunk(image_url=base64_data_url),
+            model="mistral-ocr-latest"
+        )
+        return response.pages[0].markdown
 
-# Main async runner
+    result = await loop.run_in_executor(None, task)
+    print(f"[{time.time():.2f}] End OCR")
+    return result
+
+# Fonction chat avec run_in_executor
+async def chat_response(client, base64_data_url, markdown_ocr):
+    print(f"[{time.time():.2f}] Start Chat")
+    loop = asyncio.get_event_loop()
+
+    def task():
+        response = client.chat.parse(
+            model="pixtral-12b-latest",
+            messages=[
+                {"role": "system", "content": read_txt_file("context.txt")},
+                {
+                    "role": "user",
+                    "content": [
+                        ImageURLChunk(image_url=base64_data_url),
+                        TextChunk(text=(
+                            f"This is the image's OCR in markdown:\n{markdown_ocr}\n.\n"
+                            "Convert this into a structured JSON response "
+                            "with the OCR contents in a sensible dictionary."
+                        ))
+                    ]
+                }
+            ],
+            response_format=StructuredOCR,
+        )
+        return json.loads(response.choices[0].message.parsed.model_dump_json())
+
+    result = await loop.run_in_executor(None, task)
+    print(f"[{time.time():.2f}] End Chat")
+    return result
+
+# Fonction principale par batch de 6
 async def main(list_base64_url, list_image_names):
-    
+    start_time = time.time()
     api_key = os.environ["MISTRAL_KEY"]
-    async with Mistral(api_key=api_key) as client:             
-            semaphore = asyncio.Semaphore(5)
 
-            async def safe_fetch(url):
-                async with semaphore:
-                    return await fetch(client, url)
+    async with Mistral(api_key=api_key) as client:
+        all_markdowns = []
+        all_chat_results = []
+        n_batch = 5
+        # OCR batch 6 par 6
+        for batch in chunkify(list_base64_url, n_batch):
+            print(f"OCR batch of {len(batch)}")
+            ocr_tasks = [fetch(client, url) for url in batch]
+            batch_results = await asyncio.gather(*ocr_tasks)
+            all_markdowns.extend(batch_results)
 
-            async def safe_chat(url, markdown):
-                async with semaphore:
-                    return await chat_response(client, url, markdown)
+        # Chat batch 6 par 6
+        for urls_batch, markdowns_batch in zip(
+            chunkify(list_base64_url, n_batch), chunkify(all_markdowns, n_batch)
+        ):
+            print(f"Chat batch of {len(urls_batch)}")
+            chat_tasks = [
+                chat_response(client, url, markdown)
+                for url, markdown in zip(urls_batch, markdowns_batch)
+            ]
+            batch_chat_results = await asyncio.gather(*chat_tasks)
+            all_chat_results.extend(batch_chat_results)
 
-            # OCR
-            ocr_tasks = [safe_fetch(url) for url in list_base64_url]
-            results = await asyncio.gather(*ocr_tasks)
+    total_time = time.time() - start_time
+    print(f"\n✅ Total time: {total_time:.2f} seconds\n")
 
-            # Chat
-            chat_tasks = [safe_chat(url, markdown) for url, markdown in zip(list_base64_url, results)]
-            chat_results = await asyncio.gather(*chat_tasks)
-
-            return chat_results
+    return all_chat_results
