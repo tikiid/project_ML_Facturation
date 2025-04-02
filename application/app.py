@@ -4,8 +4,7 @@ import asyncio
 import os
 import nest_asyncio
 from dotenv import load_dotenv
-import os
-import jso
+import json
 from fuzzy_join import join
 from async_scripting import main, extract_photos
 
