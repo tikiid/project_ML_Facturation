@@ -7,7 +7,7 @@ import json
 import streamlit as st
 import base64
 from dotenv import load_dotenv
-import time
+
 load_dotenv()
 class StructuredOCR(BaseModel):
     #file_name: str
@@ -27,14 +27,15 @@ def extract_photos(facture_photos):
     for photo in facture_photos:
         st.image(photo, caption="Fichier reçu", use_column_width=True)
 
-    # Lire les données binaires
+   
         file_bytes = photo.read()
 
-                    # Encodage base64 si tu veux utiliser dans un appel API
+                    
         encoded = base64.b64encode(file_bytes).decode("utf-8")
         data_url = f"data:image/jpeg;base64,{encoded}"
         list_base64_url.append(data_url)
         image_names.append(photo.name)
+        
     return image_names, list_base64_url 
           
 def read_txt_file(file_path):
@@ -45,7 +46,6 @@ def read_txt_file(file_path):
         return f"Error: The file '{file_path}' was not found."
     except Exception as e:
         return f"Error: {e}"
-# ou from mistralai.models import ...
 
 def chunkify(lst, chunk_size):
     for i in range(0, len(lst), chunk_size):
