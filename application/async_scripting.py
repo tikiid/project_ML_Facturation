@@ -87,7 +87,6 @@ def chunkify(lst, chunk_size):
     for i in range(0, len(lst), chunk_size):
         yield lst[i:i + chunk_size]
 
-# Fonction OCR avec run_in_executor
 async def fetch(client, base64_data_url):
     print(f"[{time.time():.2f}] Start OCR")
     loop = asyncio.get_event_loop()
@@ -133,7 +132,7 @@ async def chat_response(client, base64_data_url, markdown_ocr):
     print(f"[{time.time():.2f}] End Chat")
     return result
 
-# Fonction principale par batch de 6
+
 async def main(list_base64_url, list_image_names):
     start_time = time.time()
     api_key = os.environ["MISTRAL_KEY"]
@@ -141,15 +140,15 @@ async def main(list_base64_url, list_image_names):
     async with Mistral(api_key=api_key) as client:
         all_markdowns = []
         all_chat_results = []
-        n_batch = 5
-        # OCR batch 6 par 6
+        n_batch = 3
+        
         for batch in chunkify(list_base64_url, n_batch):
             print(f"OCR batch of {len(batch)}")
             ocr_tasks = [fetch(client, url) for url in batch]
             batch_results = await asyncio.gather(*ocr_tasks)
             all_markdowns.extend(batch_results)
 
-        # Chat batch 6 par 6
+        
         for urls_batch, markdowns_batch in zip(
             chunkify(list_base64_url, n_batch), chunkify(all_markdowns, n_batch)
         ):
