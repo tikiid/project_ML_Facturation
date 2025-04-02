@@ -1,17 +1,10 @@
 import streamlit as st
 import pandas as pd
-# Variables
 import asyncio
-import os
-
 import nest_asyncio
-
-import os
-import json
-
 from fuzzy_join import join
 from async_scripting import main, extract_photos
-
+import time
 launch_function = False
 
 # Streamlit
@@ -34,11 +27,12 @@ if facture_photos:
 
     
     list_image_names, list_facture_photos = extract_photos(facture_photos)
-
+    start_time = time.time()
     nest_asyncio.apply()
 
     response = asyncio.run(main(list_facture_photos, list_image_names))
-    
+    total_time = time.time() - start_time
+    print(f"Total time: {total_time:.2f} seconds\n")
     if response:
         final_results = []
         dataframe = None
@@ -57,12 +51,7 @@ if facture_photos:
             print(dataframe)
         except Exception as e:
             st.error(f"Erreur de lecture : {e}")
-            
         
-
-          
-
-
 
 else:
     st.warning("Veuillez remplir les deux champs pour activer le bouton.")
@@ -72,3 +61,6 @@ if st.button("Réinitialiser les fichiers"):
     st.session_state.upload_key += 1
     st.rerun()  
 
+
+#sentence_transformer / kmeans / hdbscan
+#regarder les benchmark 
