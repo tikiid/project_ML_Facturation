@@ -99,7 +99,7 @@ async def chat_response(client, base64_data_url, markdown_ocr):
 
 
 async def main(list_base64_url, list_image_names):
-    start_time = time.time()
+    
     api_key = os.environ["MISTRAL_KEY"]
 
     async with Mistral(api_key=api_key) as client:
@@ -124,7 +124,6 @@ async def main(list_base64_url, list_image_names):
             batch_chat_results = await asyncio.gather(*chat_tasks)
             all_chat_results.extend(batch_chat_results)
 
-    total_time = time.time() - start_time
-    print(f"Total time: {total_time:.2f} seconds\n")
+   
 
     return all_chat_results
