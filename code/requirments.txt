@@ -4,3 +4,4 @@ numpy
 thefuzz
 scikit-learn
 pillow
+streamlit
