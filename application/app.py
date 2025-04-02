@@ -22,9 +22,6 @@ facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.uplo
 st.header("🧾 Drag & Droper le fichier de facturation")
 facture_file = st.file_uploader(label=" ", key=f"facture_{st.session_state.upload_key}", type=["csv"])
 
-
-list_base64url = []
-image_names = []
 if facture_photos:
 
     
