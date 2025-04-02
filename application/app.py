@@ -32,6 +32,7 @@ facture_file = st.file_uploader(label=" ", key=f"facture_{st.session_state.uploa
 #     st.write("-----")
 #     st.write(f"{facture_file.name}")
 list_base64url = []
+image_names = []
 if facture_photos:
 
     for photo in facture_photos:
@@ -44,7 +45,8 @@ if facture_photos:
         encoded = base64.b64encode(file_bytes).decode("utf-8")
         data_url = f"data:image/jpeg;base64,{encoded}"
         list_base64url.append(data_url)
-        print(photo.name)
+        image_names.append(photo.name) 
+        
     
 
     class StructuredOCR(BaseModel):
@@ -104,7 +106,7 @@ if facture_photos:
     # Main async runner
     async def main():
         api_key = os.getenv("CLEMENT_KEY")
-        async with Mistral(api_key=api_key) as client:             
+        async with Mistral(api_key="api_key") as client:             
                 semaphore = asyncio.Semaphore(5)
 
                 async def safe_fetch(url):
@@ -128,15 +130,24 @@ if facture_photos:
         
 
     # If needed (e.g. in Jupyter)
-    loop = asyncio.get_event_loop()
-    results = loop.run_until_complete(main())
-    print(results)
-    # Affiche les résultats
-    for i, res in enumerate(results):
-        st.subheader(f"📄 Résultat pour facture {i+1}")
-        st.json(res)
+    nest_asyncio.apply()
+
+    # Run it
+    response = asyncio.run(main())
     
-    
+    if response:
+        final_results = []
+
+        for i, res in enumerate(response):
+            final_results.append({"file_name": image_names[i], **res})
+        print(final_results)
+        try:
+            df = pd.read_csv(facture_file)
+            print(df)
+        except Exception as e:
+            st.error(f"Erreur de lecture : {e}")
+
+          
 
 
 
