@@ -109,7 +109,7 @@ if st.session_state.mistral_response_df is not None:
 
             # If image is found, insert it into the new sheet
             if image_path:
-                # img = PILImage.open(image_path)  # Open image using PIL
+                img = PILImage.open(image_path)  # Open image using PIL
                 img.save(f"{TEMP_FOLDER}/{file_name}")  # Save it to temp folder
                 img = OpenPyXLImage(f"{TEMP_FOLDER}/{file_name}")  # Load the image into openpyxl
                 
