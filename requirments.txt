@@ -5,3 +5,4 @@ thefuzz
 scikit-learn
 pillow
 streamlit
+nest-asyncio
