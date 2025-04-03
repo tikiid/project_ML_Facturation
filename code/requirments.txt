@@ -1,7 +1,0 @@
-mistralai
-pandas 
-numpy 
-thefuzz
-scikit-learn
-pillow
-streamlit
