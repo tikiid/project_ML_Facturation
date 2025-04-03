@@ -6,3 +6,7 @@ scikit-learn
 pillow
 streamlit
 nest-asyncio
+python-dotenv
+fuzzyjoin
+async
+openpyxl
