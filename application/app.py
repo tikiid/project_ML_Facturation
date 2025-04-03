@@ -17,16 +17,17 @@ load_dotenv()
 TEMP_FOLDER = "temp_files"
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
-st.set_page_config(page_title="Page de Facturation")
-
-st.title("Conto")
-st.header("📂 Drag & Drop les photos des factures")
+st.set_page_config(page_title="Conto")
 
 if "upload_key" not in st.session_state:
     st.session_state.upload_key = 0
 
+st.title("Conto")
+
+st.header("📂 Glisser / Déposer les photos des factures")
 facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.upload_key}", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
-st.header("🧾 Drag & Drop le fichier CSV de facturation")
+
+st.header("🧾 Glisser / Déposer le fichier CSV de facturation")
 facture_file = st.file_uploader(label=" ", key=f"facture_{st.session_state.upload_key}", type=["csv"])
 
 # Store processed results in session_state to prevent reruns
@@ -108,7 +109,7 @@ if st.session_state.mistral_response_df is not None:
 
             # If image is found, insert it into the new sheet
             if image_path:
-                img = PILImage.open(image_path)  # Open image using PIL
+                # img = PILImage.open(image_path)  # Open image using PIL
                 img.save(f"{TEMP_FOLDER}/{file_name}")  # Save it to temp folder
                 img = OpenPyXLImage(f"{TEMP_FOLDER}/{file_name}")  # Load the image into openpyxl
                 
