@@ -18,17 +18,19 @@ load_dotenv()
 launch_function = False
 
 # Streamlit
-st.set_page_config(page_title="Page de facturation")
+st.set_page_config(page_title="Conto")
 
-st.title("Conto")
-st.header("📂 Drag & Droper le fichier des photos")
 
 if "upload_key" not in st.session_state:
     st.session_state.upload_key = 0 
 
-facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.upload_key}", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
-st.header("🧾 Drag & Droper le fichier de facturation")
+
+st.title("Conto")
+st.header("🧾 Déposer / Glisser le fichier de facturation")
 facture_file = st.file_uploader(label=" ", key=f"facture_{st.session_state.upload_key}", type=["csv"])
+
+st.header("📂 Déposer / Glisser le fichier des photos")
+facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.upload_key}", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
 mistral_response_df= None
 
