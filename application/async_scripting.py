@@ -53,7 +53,7 @@ def chunkify(lst, chunk_size):
 
 
 async def fetch(client, base64_data_url):
-    print(f"[{time.time():.2f}] Start OCR")
+    # print(f"[{time.time():.2f}] Start OCR")
     loop = asyncio.get_event_loop() #permet de pouvoir run en paralelle
 
     def task():
@@ -64,12 +64,12 @@ async def fetch(client, base64_data_url):
         return response.pages[0].markdown
 
     result = await loop.run_in_executor(None, task)
-    print(f"[{time.time():.2f}] End OCR")
+    # print(f"[{time.time():.2f}] End OCR")
     return result
 
 
 async def chat_response(client, base64_data_url, markdown_ocr):
-    print(f"[{time.time():.2f}] Start Chat")
+    # print(f"[{time.time():.2f}] Start Chat")
     loop = asyncio.get_event_loop() #permet de pouvoir run en paralelle
 
     def task():
@@ -94,7 +94,7 @@ async def chat_response(client, base64_data_url, markdown_ocr):
         return json.loads(response.choices[0].message.parsed.model_dump_json())
 
     result = await loop.run_in_executor(None, task)
-    print(f"[{time.time():.2f}] End Chat")
+    # print(f"[{time.time():.2f}] End Chat")
     return result
 
 
