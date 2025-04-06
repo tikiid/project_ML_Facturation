@@ -10,3 +10,5 @@ python-dotenv
 fuzzyjoin
 async
 openpyxl
+torch
+sentence-transformers
