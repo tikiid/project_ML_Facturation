@@ -17,17 +17,18 @@ load_dotenv()
 TEMP_FOLDER = "temp_files"
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
-st.set_page_config(page_title="Page de Facturation")
-
-st.title("Conto")
-st.header("📂 Drag & Drop les photos des factures")
+st.set_page_config(page_title="Conto")
 
 if "upload_key" not in st.session_state:
     st.session_state.upload_key = 0
 
-facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.upload_key}", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
-st.header("🧾 Drag & Drop le fichier CSV de facturation")
+st.title("Conto")
+
+st.header("🧾 Glisser / Déposer le fichier CSV de facturation")
 facture_file = st.file_uploader(label=" ", key=f"facture_{st.session_state.upload_key}", type=["csv"])
+
+st.header("📂 Glisser / Déposer les photos des factures")
+facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.upload_key}", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
 # Store processed results in session_state to prevent reruns
 if "mistral_response_df" not in st.session_state:
