@@ -56,7 +56,7 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
             dataframe = pd.DataFrame(columns=list_columns)
             final_rows = []
             for target in final_results:
-                        matched_data = match_and_filter(df, target, csv_text_embedded)
+                        matched_data = join(df, target, csv_text_embedded)
                         final_rows.append(matched_data)
 
         # Concatenate all matches into one dataframe
