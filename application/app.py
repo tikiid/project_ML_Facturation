@@ -73,7 +73,7 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
             #print(dataframe)
 
         except Exception as e:
-            st.error(f"Erreur de lecture : {e}")
+            st.error(f"Pas de matching")
 else:
     st.warning("Veuillez remplir les deux champs pour activer le bouton.")
 
