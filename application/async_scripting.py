@@ -26,9 +26,7 @@ def extract_photos(facture_photos):
     list_base64_url = [] 
     image_names = []
     for photo in facture_photos:
-        st.image(photo, caption="Fichier reçu", use_column_width=True)
-
-    # Lire les données binaires
+        
         file_bytes = photo.read()
 
                     # Encodage base64 si tu veux utiliser dans un appel API
