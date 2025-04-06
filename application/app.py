@@ -53,7 +53,7 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
         try:
             df = pd.read_csv(facture_file, index_col=0)
             if "amount" in df.columns:
-                if df.amount.dtypes == "object"
+                if df.amount.dtypes == "object":
                     df["amount"] = df.amount.str.replace(",", '.').astype(float)
                 else:
                     pass
