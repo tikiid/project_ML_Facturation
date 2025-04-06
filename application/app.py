@@ -4,7 +4,7 @@ import asyncio
 import nest_asyncio
 from dotenv import load_dotenv
 from fuzzy_join import *
-from async_scripting import *
+from async_scripting import main, extract_photos
 import io
 import os
 from openpyxl.drawing.image import Image as OpenPyXLImage
