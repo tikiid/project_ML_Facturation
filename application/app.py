@@ -51,7 +51,7 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
 
         try:
             df = pd.read_csv(facture_file, index_col=0)
-            
+            df["amount"] = df.amount.str.replace(",", '.').astype(float)
             list_columns = df.columns.to_list() + ["file_name"]
             dataframe = pd.DataFrame(columns=list_columns)
             final_rows = []
