@@ -55,6 +55,8 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
             if "amount" in df.columns:
                 if df.amount.dtypes == "object"
                     df["amount"] = df.amount.str.replace(",", '.').astype(float)
+                else:
+                    pass
             list_columns = df.columns.to_list() + ["file_name"]
             dataframe = pd.DataFrame(columns=list_columns)
             final_rows = []
