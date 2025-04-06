@@ -7,9 +7,9 @@ def text_embedding(df):
     return model.encode(df['vendor'].tolist(), convert_to_tensor=True)
 
 def match_and_filter(df, target, embedded_vendors):
-    target_text = target['vendor']
+    target_text = target['vendor'] + ' ' + target["address"] 
     
-    target_embedded = model.encode(target_text, convert_to_tensor=True)
+    target_embedded = model.encode(target['vendor'], convert_to_tensor=True)
     
     similarities = torch.nn.functional.cosine_similarity(target_embedded.unsqueeze(0), embedded_vendors)
     max_idx = torch.argmax(similarities).item()
@@ -19,10 +19,26 @@ def match_and_filter(df, target, embedded_vendors):
     match_vendor_row = df.iloc[max_idx]
     
     matched_rows = df[df['vendor'] == match_vendor_row["vendor"]].copy()
-
+    print(target_text, sim_score)
     # Common fields to assign
     matched_rows["file_name"] = target["file_name"]
-   #matched_rows["sim"] = sim_score
+    #matched_rows["sim"] = sim_score
+    if sim_score < 0.8:
+        target_embedded = model.encode(target_text, convert_to_tensor=True)
+    
+        similarities = torch.nn.functional.cosine_similarity(target_embedded.unsqueeze(0), embedded_vendors)
+        max_idx = torch.argmax(similarities).item()
+        sim_score = similarities[max_idx].item()
+
+        # Get top match row
+        match_vendor_row = df.iloc[max_idx]
+        
+        matched_rows = df[df['vendor'] == match_vendor_row["vendor"]].copy()
+        print(target_text, sim_score)
+        # Common fields to assign
+        matched_rows["file_name"] = target["file_name"]
+
+    
 
     # If exactly one row matched by vendor
     if len(matched_rows) == 1:
