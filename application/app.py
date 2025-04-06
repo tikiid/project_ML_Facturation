@@ -4,7 +4,7 @@ import asyncio
 import nest_asyncio
 from dotenv import load_dotenv
 from fuzzy_join import *
-from async_v2 import *
+from async_scripting import *
 import io
 import os
 from openpyxl.drawing.image import Image as OpenPyXLImage
@@ -51,7 +51,7 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
 
         try:
             df = pd.read_csv(facture_file, index_col=0)
-            csv_text_embedded = text_embedding(df)
+            
             list_columns = df.columns.to_list() + ["file_name"]
             dataframe = pd.DataFrame(columns=list_columns)
             final_rows = []
