@@ -3,8 +3,8 @@ import pandas as pd
 import asyncio
 import nest_asyncio
 from dotenv import load_dotenv
-from fuzzy_join import join
-from async_scripting import main, extract_photos
+from fuzzy_join import *
+from asyn_v2 import *
 import io
 import os
 from openpyxl.drawing.image import Image as OpenPyXLImage
@@ -17,17 +17,16 @@ load_dotenv()
 TEMP_FOLDER = "temp_files"
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
-st.set_page_config(page_title="Conto")
+st.set_page_config(page_title="Page de Facturation")
+
+st.title("Conto")
+st.header("📂 Drag & Drop les photos des factures")
 
 if "upload_key" not in st.session_state:
     st.session_state.upload_key = 0
 
-st.title("Conto")
-
-st.header("📂 Glisser / Déposer les photos des factures")
 facture_photos = st.file_uploader(label=" ", key=f"photos_{st.session_state.upload_key}", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
-
-st.header("🧾 Glisser / Déposer le fichier CSV de facturation")
+st.header("🧾 Drag & Drop le fichier CSV de facturation")
 facture_file = st.file_uploader(label=" ", key=f"facture_{st.session_state.upload_key}", type=["csv"])
 
 # Store processed results in session_state to prevent reruns
@@ -42,7 +41,9 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
 
     nest_asyncio.apply()
     response = asyncio.run(main(list_facture_photos, list_image_names))
-
+    
+    # Precompute embeddings
+    
     if response:
         final_results = []
         for i, res in enumerate(response):
@@ -50,13 +51,18 @@ if facture_photos and facture_file and st.session_state.mistral_response_df is N
 
         try:
             df = pd.read_csv(facture_file, index_col=0)
+            csv_text_embedded = text_embedding(df)
             list_columns = df.columns.to_list() + ["file_name"]
             dataframe = pd.DataFrame(columns=list_columns)
-
+            final_rows = []
             for target in final_results:
-                match_df = join(df, target)
-                dataframe = pd.concat([dataframe, match_df])
+                        matched_data = match_and_filter(df, target, csv_text_embedded)
+                        final_rows.append(matched_data)
 
+        # Concatenate all matches into one dataframe
+            dataframe = pd.concat(final_rows, ignore_index=True)
+        
+        
             st.session_state.mistral_response_df = dataframe
             st.dataframe(st.session_state.mistral_response_df)
             #print(dataframe)
