@@ -1,54 +1,25 @@
 import pandas as pd
-import torch
-from sentence_transformers import SentenceTransformer
-model = SentenceTransformer('all-MiniLM-L6-v2')
+from thefuzz import process
 
-def text_embedding(df):
-    return model.encode(df['vendor'].tolist(), convert_to_tensor=True)
-
-def match_and_filter(df, target, embedded_vendors):
-    target_text = target['vendor'] + ' ' + target["address"] 
+def join(df, target):
     
-    target_embedded = model.encode(target['vendor'], convert_to_tensor=True)
+    df_filtre = df[df["amount"].round(1) == round(target["amount"], 1)]
     
-    similarities = torch.nn.functional.cosine_similarity(target_embedded.unsqueeze(0), embedded_vendors)
-    max_idx = torch.argmax(similarities).item()
-    sim_score = similarities[max_idx].item()
-
-    # Get top match row
-    match_vendor_row = df.iloc[max_idx]
+    bank_vendors = df_filtre["vendor"].dropna().unique().tolist()
+    if len(bank_vendors) > 0:
     
-    matched_rows = df[df['vendor'] == match_vendor_row["vendor"]].copy()
-    print(target_text, sim_score, matched_rows)
-    # Common fields to assign
-    matched_rows["file_name"] = target["file_name"]
-    #matched_rows["sim"] = sim_score
-    if sim_score < 0.8:
-        target_embedded = model.encode(target["address"], convert_to_tensor=True)
-    
-        similarities = torch.nn.functional.cosine_similarity(target_embedded.unsqueeze(0), embedded_vendors)
-        max_idx = torch.argmax(similarities).item()
-        sim_score = similarities[max_idx].item()
-
-        # Get top match row
-        match_vendor_row = df.iloc[max_idx]
+        match_str, score = process.extractOne(target["vendor"], bank_vendors)
         
-        matched_rows = df[df['vendor'] == match_vendor_row["vendor"]].copy()
-        
-        # Common fields to assign
-        matched_rows["file_name"] = target["file_name"]
+        if len(match_str) > 0:
+            match_df = df_filtre[df_filtre["vendor"] == match_str]
 
+            match_df.loc[:,"file_name"] = target["file_name"]
+            match_df.loc[:, "score"] = score
+            """match_df.loc[:, "pic_amount"] = target["amount"]
+            match_df.loc[:, "score"] = score
+            match_df.loc[:, "vendor_pic"] = target["vendor"]"""
+
+    else:
+        match_df = None
     
-
-    # If exactly one row matched by vendor
-    if len(matched_rows) == 1:
-        return matched_rows
-
-    # If multiple rows match on vendor, filter on amount
-    if len(matched_rows) > 1:
-        matched_rows = matched_rows[matched_rows["amount"].round(1) == round(target["amount"], 1)]
-        return matched_rows if not matched_rows.empty else None
-
-    return None
-
-
+    return match_df
